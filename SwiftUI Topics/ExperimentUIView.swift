@@ -8,23 +8,92 @@
 import SwiftUI
 
 struct ExperimentUIView: View {
+    @State private var showBottomSheet = false
+    @State private var selectedValue: String?
+
+    var body: some View {
+        VStack {
+            Button(action: {
+                showBottomSheet.toggle()
+            }) {
+                Text(selectedValue ?? "Select an item")
+                    .font(.headline)
+                    .padding()
+                    .background(Color.blue)
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
+            }
+        }
+        .sheet(isPresented: $showBottomSheet) {
+            GeometryReader { geometry in
+                BottomSheetView(selectedValue: $selectedValue)
+                    .frame(width: geometry.size.width, height: geometry.size.height / 2)
+                    .background(Color.white) // Or any other background color
+                    .cornerRadius(20) // For rounded corners
+                    .offset(y: geometry.size.height / 2) // Adjust position
+                    .shadow(radius: 10) // Optional shadow
+            }
+        }
+
+    }
+}
+
+struct BottomSheetView: View {
+    @Environment(\.dismiss) var dismiss
+    @Binding var selectedValue: String?
+
+    let items = [
+        ("Jarrod Lindgren", "Direct Security Developer"),
+        ("Johnnie Steuber", "Internal Response Engineer"),
+        ("Adolph Ankunding", "Future Solutions Assistant"),
+        ("Donald Gusikowski", "Customer Intranet Liaison"),
+        ("Fatima Weber", "Internal Security Designer")
+    ]
 
     var body: some View {
         ZStack {
-            Image("TajMahal")
-                .resizable()
-                .scaledToFill()
-                .frame(maxWidth: .infinity, maxHeight: 300)
-            
-            Rectangle()
-                .fill(Color(red: 15/255, green: 5/255, blue: 56/255, opacity: 1))
-                .frame(width: 500, height: 180)
-                .rotationEffect(.degrees(-30))
-                .offset(x: 0, y: 0)
-                .blendMode(.destinationOver)
+
+            VStack {
+                Capsule()
+                    .fill(Color.gray.opacity(0.5))
+                    .frame(width: 40, height: 5)
+                    .padding(.top, 8)
+
+                Text("Select Blend Mode")
+                    .font(.headline)
+                    .padding(.vertical)
+
+                List {
+                    ForEach(items.indices, id: \.self) { index in
+                        Button(action: {
+                            selectedValue = "\(index): \(items[index].0)"
+                            dismiss()
+                        }) {
+                            HStack {
+                                Circle()
+                                    .fill(Color.gray.opacity(0.5))
+                                    .frame(width: 5, height: 5)
+
+                                VStack(alignment: .leading) {
+//                                    Text("\(index): \(items[index].0)")
+//                                        .font(.headline)
+                                    Text(items[index].1)
+                                        .font(.headline)
+                                        .foregroundColor(.black)
+                                }
+                                Spacer()
+                            }
+                            .padding(.vertical, 8)
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                    }
+                }
+                .listStyle(PlainListStyle())
+            }
+            .background(Color.white)
+            .cornerRadius(20)
+            .shadow(radius: 10)
         }
-        .clipped()
-        .frame(height: 300)
     }
 }
 
