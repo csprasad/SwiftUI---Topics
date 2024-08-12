@@ -10,39 +10,40 @@ import SwiftUI
 struct ExperimentUIView: View {
     @State private var showBottomSheet = false
     @State private var selectedValue: String?
+    
+    @State private var showingCredits = false
+
 
     var body: some View {
         VStack {
-            Button(action: {
-                showBottomSheet.toggle()
-            }) {
-                Text(selectedValue ?? "Select an item")
-                    .font(.headline)
-                    .padding()
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
+            Button("Show Credits") {
+                showingCredits.toggle()
             }
-        }
-        .sheet(isPresented: $showBottomSheet) {
-            GeometryReader { geometry in
-                BottomSheetView(selectedValue: $selectedValue)
-                    .frame(width: geometry.size.width, height: geometry.size.height / 2)
-                    .background(Color.white) // Or any other background color
-                    .cornerRadius(20) // For rounded corners
-                    .offset(y: geometry.size.height / 2) // Adjust position
-                    .shadow(radius: 10) // Optional shadow
+            .sheet(isPresented: $showingCredits) {
+                BottomSheet(selectedValue: $selectedValue)
+                    .presentationDetents([.medium])
+                    .presentationDragIndicator(.visible)
             }
         }
 
     }
 }
 
-struct BottomSheetView: View {
+struct BottomSheet: View {
     @Environment(\.dismiss) var dismiss
     @Binding var selectedValue: String?
 
     let items = [
+        ("Jarrod Lindgren", "Direct Security Developer"),
+        ("Johnnie Steuber", "Internal Response Engineer"),
+        ("Adolph Ankunding", "Future Solutions Assistant"),
+        ("Donald Gusikowski", "Customer Intranet Liaison"),
+        ("Fatima Weber", "Internal Security Designer"),
+        ("Jarrod Lindgren", "Direct Security Developer"),
+        ("Johnnie Steuber", "Internal Response Engineer"),
+        ("Adolph Ankunding", "Future Solutions Assistant"),
+        ("Donald Gusikowski", "Customer Intranet Liaison"),
+        ("Fatima Weber", "Internal Security Designer"),
         ("Jarrod Lindgren", "Direct Security Developer"),
         ("Johnnie Steuber", "Internal Response Engineer"),
         ("Adolph Ankunding", "Future Solutions Assistant"),
@@ -54,14 +55,9 @@ struct BottomSheetView: View {
         ZStack {
 
             VStack {
-                Capsule()
-                    .fill(Color.gray.opacity(0.5))
-                    .frame(width: 40, height: 5)
-                    .padding(.top, 8)
-
                 Text("Select Blend Mode")
                     .font(.headline)
-                    .padding(.vertical)
+                    .padding(.vertical, 20)
 
                 List {
                     ForEach(items.indices, id: \.self) { index in
@@ -92,7 +88,7 @@ struct BottomSheetView: View {
             }
             .background(Color.white)
             .cornerRadius(20)
-            .shadow(radius: 10)
+//            .shadow(radius: 10)
         }
     }
 }

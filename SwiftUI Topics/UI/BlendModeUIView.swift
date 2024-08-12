@@ -14,7 +14,7 @@ private func blendModeName(_ blendMode: BlendMode) -> String {
         .darken: "Darken", .lighten: "Lighten", .colorDodge: "Color Dodge", .colorBurn: "Color Burn",
         .softLight: "Soft Light", .hardLight: "Hard Light", .difference: "Difference", .exclusion: "Exclusion",
         .hue: "Hue", .saturation: "Saturation", .color: "Color", .luminosity: "Luminosity",
-        .sourceAtop: "Source Atop", .destinationOver: "Desti.. Over", .destinationOut: "Desti.. Out",
+        .sourceAtop: "Source Atop", .destinationOver: "Destination Over", .destinationOut: "Destination Out",
         .plusDarker: "Plus Darker", .plusLighter: "Plus Lighter"
     ]
     return blendModeNames[blendMode] ?? "Unknown"
@@ -25,6 +25,11 @@ struct BlendModeUIView: View {
     @State private var selectedImage: UIImage? = UIImage(named: "TajMahal")
     @State private var isImagePickerPresented = false
     @State private var currentBlendModeIndex = 0
+    
+    @State private var showBottomSheet = false
+    @State private var selectedValue: String?
+    
+    @State private var showingCredits = false
 
     let blendModes: [BlendMode] = [
         .normal, .multiply, .screen, .overlay, .darken, .lighten, .colorDodge, .colorBurn,
@@ -33,33 +38,33 @@ struct BlendModeUIView: View {
     ]
 
     var body: some View {
-        VStack(spacing: 20) {
-            ImageWithOverlay(
-                selectedImage: selectedImage,
-                selectedColor: selectedColor,
-                currentBlendMode: blendModes[currentBlendModeIndex]
-            )
+        
+        VStack {
+            ZStack(alignment: .bottom) {
+                ImageWithOverlay(
+                    selectedImage: selectedImage,
+                    selectedColor: selectedColor,
+                    currentBlendMode: blendModes[currentBlendModeIndex]
+                )
+                
+                ColorPickerAndButton(
+                    selectedColor: $selectedColor,
+                    isImagePickerPresented: $isImagePickerPresented
+                )
+            }
             
-            ColorPickerAndButton(
-                selectedColor: $selectedColor,
-                isImagePickerPresented: $isImagePickerPresented
-            )
-            
-            BlendModeButtons(
-                blendModes: blendModes,
-                blendModeName: blendModeName,
-                currentBlendModeIndex: $currentBlendModeIndex
-            )
+            BottomSheetView(currentBlendModeIndex: $currentBlendModeIndex, blendModes: blendModes, blendModeName: blendModeName)
         }
         .edgesIgnoringSafeArea(.bottom)
         .sheet(isPresented: $isImagePickerPresented) {
             ImagePicker(selectedImage: $selectedImage)
         }
+        
     }
+    
 }
 
-
-
+// MARK: - Image Integration
 struct ImageWithOverlay: View {
     let selectedImage: UIImage?
     let selectedColor: Color
@@ -70,20 +75,21 @@ struct ImageWithOverlay: View {
             Image(uiImage: selectedImage ?? UIImage())
                 .resizable()
                 .scaledToFill()
-                .frame(maxWidth: .infinity, maxHeight: 300)
+                .frame(maxWidth: .infinity, maxHeight: 400)
             
             Rectangle()
                 .fill(selectedColor)
-                .frame(width: 500, height: 180)
-                .rotationEffect(.degrees(-30))
+                .frame(width: 600, height: 180)
+                .rotationEffect(.degrees(-20))
                 .offset(x: 0, y: 0)
                 .blendMode(currentBlendMode)
         }
         .clipped()
-        .frame(height: 300)
+        .frame(height: 400)
     }
 }
 
+// MARK: - Color Picker Integration
 struct ColorPickerAndButton: View {
     @Binding var selectedColor: Color
     @Binding var isImagePickerPresented: Bool
@@ -91,8 +97,8 @@ struct ColorPickerAndButton: View {
     var body: some View {
         HStack {
             ColorPicker("", selection: $selectedColor)
-                .frame(maxHeight: 50)
                 .cornerRadius(8)
+                .frame(width: 150)
                 .padding()
             
             Spacer()
@@ -103,91 +109,53 @@ struct ColorPickerAndButton: View {
                 Image(systemName: "photo.on.rectangle")
                     .resizable()
                     .aspectRatio(contentMode: .fit)
-                    .foregroundColor(.orange)
+                    .foregroundColor(.black).opacity(0.6)
                     .frame(width: 50, height: 50)
             }
             .padding()
         }
-        .frame(height: 50)
+        .frame(maxHeight: 60)
     }
 }
 
-struct BlendModeRow: View {
-    let rowIndex: Int
+// MARK: - Pop up sheet Integration
+struct BottomSheetView: View {
+    @Environment(\.dismiss) var dismiss
+    @Binding var currentBlendModeIndex: Int
+    
     let blendModes: [BlendMode]
     let blendModeName: (BlendMode) -> String
-    @Binding var currentBlendModeIndex: Int
 
     var body: some View {
-        HStack(spacing: 10) {
-            ForEach(rowRange, id: \.self) { columnIndex in
-                let index = rowIndex * 3 + columnIndex
-                if index < blendModes.count {
-                    let blendMode = blendModes[index]
-                    let blendModeName = self.blendModeName(blendMode)
-                    
-                    BlendModeButton(
-                        blendMode: blendMode,
-                        blendModeName: blendModeName,
-                        action: {
-                            print("Button \(blendModeName) Pressed")
+        ZStack {
+            VStack {
+                Text("Blend Modes")
+                    .font(.custom("Futura", size: 25))
+
+                List {
+                    ForEach(blendModes.indices, id: \.self) { index in
+                        Button(action: {
                             currentBlendModeIndex = index
+                            dismiss()
+                        }) {
+                            HStack {
+                                VStack(alignment: .leading) {
+                                    Text(self.blendModeName(blendModes[index]))
+                                        .font(.custom("Futura", size: 20))
+                                }
+                                Spacer()
+                            }
+                            .padding(8)
+                            .contentShape(Rectangle())
                         }
-                    )
-                }
-            }
-        }
-    }
-
-    private var rowRange: Range<Int> {
-        0..<3 // Number of columns per row
-    }
-}
-
-struct BlendModeButton: View {
-    let blendMode: BlendMode
-    let blendModeName: String
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            Text(blendModeName)
-                .frame(maxWidth: .infinity, minHeight: 40)
-                .background(Color.orange)
-                .foregroundColor(.white)
-                .cornerRadius(8)
-        }
-    }
-}
-
-struct BlendModeButtons: View {
-    let blendModes: [BlendMode]
-    let blendModeName: (BlendMode) -> String
-    @Binding var currentBlendModeIndex: Int
-
-    var body: some View {
-        VStack(spacing: 10) {
-            ScrollView {
-                LazyVStack(spacing: 10) {
-                    ForEach(0..<numberOfRows, id: \.self) { rowIndex in
-                        BlendModeRow(
-                            rowIndex: rowIndex,
-                            blendModes: blendModes,
-                            blendModeName: blendModeName,
-                            currentBlendModeIndex: $currentBlendModeIndex
-                        )
+                        .buttonStyle(PlainButtonStyle())
                     }
                 }
+                .listStyle(PlainListStyle())
             }
         }
-        .padding()
-    }
-
-    private var numberOfRows: Int {
-        (blendModes.count + 2) / 3 // Assuming 3 columns per row
     }
 }
-
 
 // MARK: - Image Picker Integration
 struct ImagePicker: UIViewControllerRepresentable {
