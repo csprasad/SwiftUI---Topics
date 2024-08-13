@@ -40,18 +40,16 @@ struct BlendModeUIView: View {
     var body: some View {
         
         VStack {
-            ZStack(alignment: .bottom) {
-                ImageWithOverlay(
-                    selectedImage: selectedImage,
-                    selectedColor: selectedColor,
-                    currentBlendMode: blendModes[currentBlendModeIndex]
-                )
-                
-                ColorPickerAndButton(
-                    selectedColor: $selectedColor,
-                    isImagePickerPresented: $isImagePickerPresented
-                )
-            }
+            ImageWithOverlay(
+                selectedImage: selectedImage,
+                selectedColor: selectedColor,
+                currentBlendMode: blendModes[currentBlendModeIndex]
+            )
+            
+            ColorPickerAndButton(
+                selectedColor: $selectedColor,
+                isImagePickerPresented: $isImagePickerPresented
+            )
             
             BottomSheetView(currentBlendModeIndex: $currentBlendModeIndex, blendModes: blendModes, blendModeName: blendModeName)
         }
@@ -75,17 +73,17 @@ struct ImageWithOverlay: View {
             Image(uiImage: selectedImage ?? UIImage())
                 .resizable()
                 .scaledToFill()
-                .frame(maxWidth: .infinity, maxHeight: 400)
+                .frame(maxWidth: .infinity, maxHeight: 300)
             
             Rectangle()
                 .fill(selectedColor)
-                .frame(width: 600, height: 180)
+                .frame(width: 600, height: 150)
                 .rotationEffect(.degrees(-20))
                 .offset(x: 0, y: 0)
                 .blendMode(currentBlendMode)
         }
         .clipped()
-        .frame(height: 400)
+        .frame(height: 300)
     }
 }
 
@@ -96,9 +94,9 @@ struct ColorPickerAndButton: View {
 
     var body: some View {
         HStack {
+            Spacer()
             ColorPicker("", selection: $selectedColor)
                 .cornerRadius(8)
-                .frame(width: 150)
                 .padding()
             
             Spacer()
