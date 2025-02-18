@@ -59,3 +59,6 @@ This repository is licensed under the [MIT License](LICENSE). See the LICENSE fi
 ## 📞 Contact
 
 For questions, feedback, or suggestions, feel free to open an issue or contact the repository maintainer at [codealligator.csprasad@gmail.com](mailto:codealligator.csprasad@gmail.com).
+
+## License
+This project is licensed under the **MIT License**.
